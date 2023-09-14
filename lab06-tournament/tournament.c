@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 struct TeamCard
 {
@@ -17,6 +18,21 @@ struct TeamCard
 
 int alphabeticalSort(struct TeamCard *player1, struct TeamCard *player2)
 {
+    // int i = 0;
+
+    // while (player1->teamName[i] != '\0')
+    // {
+    //     player1->teamName[i] = tolower(player1->teamName[i]);
+    //     i++;
+    // }
+    // int i = 0;
+
+    // while (player2->teamName[i] != '\0')
+    // {
+    //     player2->teamName[i] = tolower(player2->teamName[i]);
+    //     i++;
+    // }
+
     return (strcmp(player1->teamName, player2->teamName));
 }
 
@@ -181,7 +197,7 @@ int main()
         for (int z = 0; z < totalOfMatches; z++)
         {
             /* code */
-            scanf("%[^#]#%d@%d#%s ", team1, &score1, &score2, team2);
+            scanf("%[^#]#%d@%d#%[^\n]%*c ", team1, &score1, &score2, team2);
             team1Index = binarySearch(Tournament, 0, totalOfTeams - 1, team1);
             team2Index = binarySearch(Tournament, 0, totalOfTeams - 1, team2);
 
@@ -228,7 +244,10 @@ int main()
         }
         qsort(Tournament, totalOfTeams, sizeof(struct TeamCard), totalPointsSort);
         auxPrint(Tournament, totalOfTeams);
-        printf("\n");
+        if (i != totalOfTournaments - 1)
+        {
+            printf("\n");
+        }
         free(Tournament);
     }
 
