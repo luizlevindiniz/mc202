@@ -18,22 +18,42 @@ struct TeamCard
 
 int alphabeticalSort(struct TeamCard *player1, struct TeamCard *player2)
 {
-    // int i = 0;
+    int sum1 = 0;
+    int sum2 = 0;
 
-    // while (player1->teamName[i] != '\0')
-    // {
-    //     player1->teamName[i] = tolower(player1->teamName[i]);
-    //     i++;
-    // }
-    // int i = 0;
+    for (int i = 0; player1->teamName[i]; i++)
+    {
+        sum1 = sum1 + player1->teamName[i];
 
-    // while (player2->teamName[i] != '\0')
-    // {
-    //     player2->teamName[i] = tolower(player2->teamName[i]);
-    //     i++;
-    // }
+        if (player1->teamName[i] > 32 && player1->teamName[i] < 91)
+        {
+            sum1 = sum1 + 32;
+        }
+    }
 
-    return (strcmp(player1->teamName, player2->teamName));
+    for (int i = 0; player2->teamName[i]; i++)
+    {
+        sum2 = sum2 + player2->teamName[i];
+
+        if (player2->teamName[i] > 32 && player2->teamName[i] < 91)
+        {
+            sum2 = sum2 + 32;
+        }
+    }
+
+    if (sum1 == sum2)
+    {
+        return 0;
+    }
+    else if (sum1 < sum2)
+    {
+        return -1;
+    }
+    else
+    {
+        return 1;
+    }
+    // return (strcmp(player1->teamName, player2->teamName));
 }
 
 int totalPointsSort(struct TeamCard *player1, struct TeamCard *player2)
