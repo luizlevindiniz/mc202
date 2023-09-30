@@ -115,15 +115,40 @@ int df_push(dequef *D, float x)
 float df_pop(dequef *D)
 {
    int pos;
-   int elementsToShrink = D->cap / (pow(D->cap, D->factor));
+   int elementsToShrink = D->cap / (pow(D->factor, 2));
    int newSizeAfterShrink = (long)(D->cap / D->factor);
-   if (D->size == elementsToShrink && newSizeAfterShrink > D->mincap)
+   if (D->size == elementsToShrink && newSizeAfterShrink >= D->mincap)
    {
-      printf("Resize");
+      float *resize = malloc(sizeof(float) * (newSizeAfterShrink));
+      if (resize)
+      {
+
+         int i = 0;
+         pos = D->first;
+         resize[i] = D->data[pos];
+         pos++;
+         for (i = 1; i < D->cap; i++, pos++)
+         {
+            if (pos == D->cap)
+            {
+               pos = 0;
+            }
+            resize[i] = D->data[pos];
+         }
+         D->cap = newSizeAfterShrink;
+         D->first = 0;
+         free(D->data);
+         D->data = resize;
+      }
+      else
+      {
+         return 0;
+      }
    }
 
    D->size--;
    pos = (D->first + D->size) % (D->cap);
+
    return D->data[pos];
 }
 
