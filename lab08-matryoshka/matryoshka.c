@@ -83,32 +83,40 @@ int main(void)
         scanf("%d", &dollSize);
 
         struct Stack *matryoshka = createMatryoshka(dollSize);
+        int *aux = malloc(sizeof(int) * dollSize);
         int isMatryoshka = 1;
         int doll = 0;
         int lastElement = 0;
         int actualSize = 0;
         for (int i = 0; i < dollSize; i++)
         {
-            scanf("%d", &doll);
-
-            if (doll < 0 && i == 0)
+            scanf("%d", &aux[i]);
+            // printf("%d ", aux[i]);
+        }
+        for (int i = 0; i < dollSize; i++)
+        {
+            doll = aux[i];
+            if (doll < 0)
             {
-                actualSize++;
-                push(matryoshka, doll);
-            }
-            else if (doll < 0)
-            {
 
-                lastElement = topValue(matryoshka);
-                if (lastElement > doll)
-                {
-                    isMatryoshka = 0;
-                    break;
-                }
-                else
+                if (i == 0)
                 {
                     actualSize++;
                     push(matryoshka, doll);
+                }
+                else
+                {
+                    lastElement = topValue(matryoshka);
+                    if (lastElement > doll)
+                    {
+                        isMatryoshka = 0;
+                        break;
+                    }
+                    else
+                    {
+                        actualSize++;
+                        push(matryoshka, doll);
+                    }
                 }
             }
             else if (doll > 0 && i == 0)
@@ -131,14 +139,17 @@ int main(void)
                 }
             }
         }
+        if (dollSize)
+        {
 
-        if (isMatryoshka == 1)
-        {
-            printf(":-) Matriosca!\n");
-        }
-        else
-        {
-            printf(":-( Tente novamente.\n");
+            if (isMatryoshka == 1)
+            {
+                printf(":-) Matriosca!\n");
+            }
+            else
+            {
+                printf(":-( Tente novamente.\n");
+            }
         }
         free(matryoshka->stackArray);
         free(matryoshka);
