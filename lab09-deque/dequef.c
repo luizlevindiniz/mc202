@@ -64,18 +64,16 @@ long df_size(dequef *D)
 int df_push(dequef *D, float x)
 {
    int pos;
+
    if (D->size == D->cap)
    {
+
       int newSize = (D->cap * D->factor);
       float *resize = malloc(sizeof(float) * (newSize));
       if (resize)
       {
 
-         int i = 0;
-         pos = D->first;
-         resize[i] = D->data[pos];
-         pos++;
-         for (i = 1; i < D->cap; i++, pos++)
+         for (int i = 0, pos = D->first; i < D->size; i++, pos++)
          {
             if (pos == D->cap)
             {
@@ -83,6 +81,7 @@ int df_push(dequef *D, float x)
             }
             resize[i] = D->data[pos];
          }
+
          D->cap = newSize;
          D->first = 0;
          free(D->data);
@@ -115,19 +114,17 @@ int df_push(dequef *D, float x)
 float df_pop(dequef *D)
 {
    int pos;
-   int elementsToShrink = D->cap / (pow(D->factor, 2));
-   int newSizeAfterShrink = (long)(D->cap / D->factor);
-   if (D->size == elementsToShrink && newSizeAfterShrink >= D->mincap)
+
+   long numOfElementsToShrink = (long)D->cap / (pow(D->factor, 2));
+   long shrinkSize = (long)(D->cap / D->factor);
+
+   if (D->size == numOfElementsToShrink && shrinkSize >= D->mincap)
    {
-      float *resize = malloc(sizeof(float) * (newSizeAfterShrink));
+
+      float *resize = malloc(sizeof(float) * (shrinkSize));
       if (resize)
       {
-
-         int i = 0;
-         pos = D->first;
-         resize[i] = D->data[pos];
-         pos++;
-         for (i = 1; i < D->cap; i++, pos++)
+         for (int i = 0, pos = D->first; i < D->size; i++, pos++)
          {
             if (pos == D->cap)
             {
@@ -135,19 +132,25 @@ float df_pop(dequef *D)
             }
             resize[i] = D->data[pos];
          }
-         D->cap = newSizeAfterShrink;
+         D->cap = shrinkSize;
          D->first = 0;
          free(D->data);
          D->data = resize;
       }
       else
       {
-         return 0;
+         return 0.0;
       }
    }
 
    D->size--;
+
    pos = (D->first + D->size) % (D->cap);
+
+   if (D->size == 0)
+   {
+      D->first = 0;
+   }
 
    return D->data[pos];
 }
@@ -163,6 +166,48 @@ float df_pop(dequef *D)
 **/
 int df_inject(dequef *D, float x)
 {
+
+   int pos;
+
+   if (D->size == D->cap)
+   {
+
+      int newSize = (D->cap * D->factor);
+      float *resize = malloc(sizeof(float) * (newSize));
+      if (resize)
+      {
+
+         for (int i = 0, pos = D->first; i < D->size; i++, pos++)
+         {
+            if (pos == D->cap)
+            {
+               pos = 0;
+            }
+            resize[i] = D->data[pos];
+         }
+
+         D->cap = newSize;
+         D->first = 0;
+         free(D->data);
+         D->data = resize;
+      }
+      else
+      {
+         return 0;
+      }
+   }
+
+   if (D->first == 0)
+   {
+      D->first = D->cap;
+   }
+
+   D->first--;
+   pos = D->first;
+   D->data[pos] = x;
+   D->size++;
+
+   return 1;
 }
 
 /**
@@ -179,6 +224,45 @@ int df_inject(dequef *D, float x)
 **/
 float df_eject(dequef *D)
 {
+   int pos;
+
+   long numOfElementsToShrink = (long)D->cap / (pow(D->factor, 2));
+   long shrinkSize = (long)(D->cap / D->factor);
+
+   if (D->size == numOfElementsToShrink && shrinkSize >= D->mincap)
+   {
+
+      float *resize = malloc(sizeof(float) * (shrinkSize));
+      if (resize)
+      {
+         for (int i = 0, pos = D->first; i < D->size; i++, pos++)
+         {
+            if (pos == D->cap)
+            {
+               pos = 0;
+            }
+            resize[i] = D->data[pos];
+         }
+         D->cap = shrinkSize;
+         D->first = 0;
+         free(D->data);
+         D->data = resize;
+      }
+      else
+      {
+         return 0.0;
+      }
+   }
+
+   pos = D->first;
+   D->size--;
+   D->first++;
+   if (D->first == D->cap)
+   {
+      D->first = 0;
+   }
+
+   return D->data[pos];
 }
 
 /**
@@ -189,7 +273,8 @@ float df_eject(dequef *D)
 void df_set(dequef *D, long i, float x)
 {
 
-   D->data[i] = x;
+   if (i >= 0 && i < D->cap)
+      D->data[(i + D->first) % D->cap] = x;
 }
 
 /**
@@ -199,7 +284,9 @@ void df_set(dequef *D, long i, float x)
 **/
 float df_get(dequef *D, long i)
 {
-   return D->data[i];
+   if (i >= 0 && i < D->cap)
+      return D->data[(i + D->first) % D->cap];
+   return 0.0;
 }
 
 /**
@@ -208,9 +295,13 @@ float df_get(dequef *D, long i)
 void df_print(dequef *D)
 {
    printf("deque (%ld): ", D->size);
-   for (int i = 0; i < D->size; i++)
+   for (int i = 0, j = D->first; i < D->size; i++, j++)
    {
-      printf("%.1f ", D->data[i]);
+      if (j == D->cap)
+      {
+         j = 0;
+      }
+      printf("%.1f ", D->data[j]);
    }
    printf("\n");
 }
