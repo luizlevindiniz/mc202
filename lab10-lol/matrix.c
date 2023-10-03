@@ -2,24 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct Node
+typedef struct Node
 {
     int column;
     int value;
     struct Node *next;
-};
-struct RowNode
+} Node;
+typedef struct RowNode
 {
     int rowNumber;
     struct Node *row;
     struct RowNode *next;
-};
+} RowNode;
 
-struct Matrix
+typedef struct Matrix
 {
-    struct RowNode *head;
     int size;
-};
+    struct RowNode *head;
+} Matrix;
 
 struct RowNode *createRowNode()
 {
@@ -46,6 +46,45 @@ struct Matrix *createMatrix()
     }
 }
 
+void printTriples(struct Matrix *M)
+{
+    struct RowNode *temp = M->head;
+    printf("M: ");
+    while (temp->next != NULL)
+    {
+        while (temp->row->next != NULL)
+        {
+
+            if (temp->row->value != 0)
+                printf("(%d,%d,%d) ", temp->rowNumber, temp->row->column, temp->row->value);
+            temp->row = temp->row->next;
+        }
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+int readValue(struct Matrix *M, int row, int column)
+{
+    struct RowNode *temp = M->head;
+    while (temp->rowNumber != row && temp != NULL)
+    {
+        temp = temp->next;
+    }
+    while (temp->row->column != column && temp->row != NULL)
+    {
+        temp->row = temp->row->next;
+    }
+    if (temp == NULL || temp->row == NULL)
+    {
+        printf("NULL\n");
+    }
+    else
+    {
+        printf("M[%d][%d] == %d\n", row, column, temp->row->value);
+    }
+}
+
 int main(void)
 {
 
@@ -53,7 +92,7 @@ int main(void)
     char letter;
     int row, column;
     int value;
-    struct matrix *M = NULL;
+    Matrix *M = NULL;
     char line[20];
 
     while (isReading)
@@ -71,12 +110,36 @@ int main(void)
 
                 M = createMatrix();
             }
+            else if (letter == 'p')
+            {
+                if (M != NULL)
+                {
+                    printTriples(M);
+                }
+            }
+            else
+            {
+                isReading = 0;
+                if (M != NULL)
+                {
+                    free(M);
+                }
+            }
         }
         else
         {
             printf("%d - %d - %d\n", row, column, value);
+            if (letter == 'r')
+            {
+                readValue(M, row, column);
+            }
+            else
+            {
+                if (M != NULL)
+                {
+                }
+            }
         }
     }
-
     return 0;
 }
