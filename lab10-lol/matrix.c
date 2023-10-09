@@ -64,11 +64,11 @@ Matrix *createMatrix()
 // function to print (row, column, value) for each element in matrix where value != 0
 void printTriples(Matrix *M)
 {
-    if (M)
+    if (M->head != NULL)
     {
         RowNode *temp = M->head;
         Node *check = NULL;
-        printf("M: ");
+        int count = 0;
         while (temp != NULL)
         {
             check = temp->row;
@@ -77,13 +77,31 @@ void printTriples(Matrix *M)
                 while (check != NULL)
                 {
                     if (check->value != 0)
+                    {
+                        if (count == 0)
+                        {
+                            printf("M: ");
+                            count++;
+                        }
                         printf("(%d,%d,%d) ", temp->rowNumber, check->column, check->value);
+                    }
                     check = check->next;
                 }
                 temp = temp->next;
             }
         }
-        printf("\n");
+        if (count == 0)
+        {
+            printf("A matriz e' nula.\n");
+        }
+        else
+        {
+            printf("\n");
+        }
+    }
+    else
+    {
+        printf("A matriz e' nula.\n");
     }
 }
 
@@ -111,7 +129,7 @@ int readValue(Matrix *M, int row, int column)
 
         if (temp == NULL || check == NULL)
         {
-            printf("Not found, NULL value\n");
+            printf("M[%d][%d] == 0\n", row, column);
 
             return 0;
         }
@@ -160,11 +178,11 @@ int main(void)
     int row, column;
     int value;
     Matrix *M = NULL;
-    char line[20];
+    char line[40];
 
     while (isReading)
     {
-        fgets(line, 20, stdin);
+        fgets(line, 40, stdin);
 
         if (sscanf(line, "%c [%d,%d] %d", &letter, &row, &column, &value) == 1)
         {
@@ -200,6 +218,17 @@ int main(void)
                 isReading = 0;
                 if (M)
                 {
+                    RowNode *deleteRowNode = M->head;
+                    while (deleteRowNode)
+                    {
+                        Node *deleteRow = deleteRowNode->row;
+                        if (deleteRow)
+                        {
+                            freeRows(deleteRow);
+                        }
+                        deleteRowNode = deleteRowNode->next;
+                    }
+                    freeRowNodes(deleteRowNode);
                     free(M);
                 }
             }
@@ -263,24 +292,50 @@ int main(void)
                             }
                             else
                             {
-
-                                while (checkNext != NULL)
+                                int isReading = 1;
+                                while (isReading)
                                 {
-                                    if (checkHead->column == newNode->column)
+                                    if (checkNext == NULL)
                                     {
-                                        // pensar na logica
+                                        if (checkHead->column == newNode->column)
+                                        {
+                                            checkHead->value = newNode->value;
+                                            isReading = 0;
+                                        }
+                                        else
+                                        {
+                                            checkHead->next = newNode;
+                                            isReading = 0;
+                                        }
                                     }
-                                    checkHead = checkHead->next;
-                                    checkNext = checkNext->next;
+                                    else
+                                    {
+                                        if (checkHead->column == newNode->column)
+                                        {
+                                            checkHead->value = newNode->value;
+                                            isReading = 0;
+                                        }
+                                        else if (checkHead->column < newNode->column && checkNext->column > newNode->column)
+                                        {
+                                            checkHead->next = newNode;
+                                            newNode->next = checkNext;
+                                            isReading = 0;
+                                        }
+                                        else
+                                        {
+
+                                            checkHead = checkHead->next;
+                                            checkNext = checkNext->next;
+                                        }
+                                    }
                                 }
-                                temp->row->next = newNode;
                             }
                         }
                     }
                 }
                 else
                 {
-                    printf("Matrix is empty..\n");
+                    printf("A matriz e' nula.\n");
                 }
             }
         }
