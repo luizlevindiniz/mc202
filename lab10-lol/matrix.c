@@ -1,13 +1,19 @@
+/* modificar o create row node para devolver o row
+como NULL e criar o Node a parte na hr de colocar na memória
+na linha 230 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+// a node to store column and value
 typedef struct Node
 {
     int column;
     int value;
     struct Node *next;
 } Node;
+// an entire row, tagged with a row number
 typedef struct RowNode
 {
     int rowNumber;
@@ -15,30 +21,107 @@ typedef struct RowNode
     struct RowNode *next;
 } RowNode;
 
+// head to the first row a.k.a pointer to matrix beggining
 typedef struct Matrix
 {
-    int size;
     struct RowNode *head;
 } Matrix;
 
-struct RowNode *createRowNode()
+// function to create a new Row, tagget with a given row number
+RowNode *createRowNode(int rowNumber)
 {
-    struct RowNode *rowNode = malloc(sizeof(struct RowNode));
-    rowNode->next = NULL;
-    rowNode->row = malloc(sizeof(struct Node));
-    rowNode->rowNumber = 0;
+    RowNode *rowNode = malloc(sizeof(RowNode));
+    if (rowNode)
+    {
 
-    return rowNode;
+        rowNode->next = NULL;
+        rowNode->row = NULL;
+        rowNode->rowNumber = rowNumber;
+
+        return rowNode;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
-struct Matrix *createMatrix()
+// function to create an empty matrix, in failure returns NULL
+Matrix *createMatrix()
 {
-    struct Matrix *matrix = malloc(sizeof(struct Matrix));
+    Matrix *matrix = malloc(sizeof(Matrix));
     if (matrix)
     {
         matrix->head = NULL;
-        matrix->size = 0;
         return matrix;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+// function to print (row, column, value) for each element in matrix where value != 0
+void printTriples(Matrix *M)
+{
+    if (M)
+    {
+        RowNode *temp = M->head;
+        Node *check = NULL;
+        printf("M: ");
+        while (temp != NULL)
+        {
+            check = temp->row;
+            if (check)
+            {
+                while (check != NULL)
+                {
+                    if (check->value != 0)
+                        printf("(%d,%d,%d) ", temp->rowNumber, check->column, check->value);
+                    check = check->next;
+                }
+                temp = temp->next;
+            }
+        }
+        printf("\n");
+    }
+}
+
+// function to read a value in matrix, with a given row and column
+int readValue(Matrix *M, int row, int column)
+{
+    if (M)
+    {
+
+        RowNode *temp = M->head;
+        Node *check = NULL;
+        while (temp != NULL && temp->rowNumber != row)
+        {
+            temp = temp->next;
+        }
+
+        if (temp != NULL)
+        {
+            check = temp->row;
+            while (check != NULL && check->column != column)
+            {
+                check = check->next;
+            }
+        }
+
+        if (temp == NULL || check == NULL)
+        {
+            printf("Not found, NULL value\n");
+
+            return 0;
+        }
+
+        else
+        {
+            printf("M[%d][%d] == %d\n", row, column, check->value);
+
+            return (check->value);
+        }
     }
     else
     {
@@ -46,42 +129,26 @@ struct Matrix *createMatrix()
     }
 }
 
-void printTriples(struct Matrix *M)
+void freeRows(Node *rowHead)
 {
-    struct RowNode *temp = M->head;
-    printf("M: ");
-    while (temp->next != NULL)
+    Node *temp = rowHead;
+    while (rowHead != NULL)
     {
-        while (temp->row->next != NULL)
-        {
-
-            if (temp->row->value != 0)
-                printf("(%d,%d,%d) ", temp->rowNumber, temp->row->column, temp->row->value);
-            temp->row = temp->row->next;
-        }
-        temp = temp->next;
+        rowHead = rowHead->next;
+        free(temp);
+        temp = rowHead;
     }
-    printf("\n");
 }
 
-int readValue(struct Matrix *M, int row, int column)
+void freeRowNodes(RowNode *rowNodeHead)
 {
-    struct RowNode *temp = M->head;
-    while (temp->rowNumber != row && temp != NULL)
+    RowNode *temp = rowNodeHead;
+
+    while (rowNodeHead != NULL)
     {
-        temp = temp->next;
-    }
-    while (temp->row->column != column && temp->row != NULL)
-    {
-        temp->row = temp->row->next;
-    }
-    if (temp == NULL || temp->row == NULL)
-    {
-        printf("NULL\n");
-    }
-    else
-    {
-        printf("M[%d][%d] == %d\n", row, column, temp->row->value);
+        rowNodeHead = rowNodeHead->next;
+        free(temp);
+        temp = rowNodeHead;
     }
 }
 
@@ -103,8 +170,19 @@ int main(void)
         {
             if (letter == 'c')
             {
-                if (M != NULL)
+                if (M)
                 {
+                    RowNode *deleteRowNode = M->head;
+                    while (deleteRowNode)
+                    {
+                        Node *deleteRow = deleteRowNode->row;
+                        if (deleteRow)
+                        {
+                            freeRows(deleteRow);
+                        }
+                        deleteRowNode = deleteRowNode->next;
+                    }
+                    freeRowNodes(deleteRowNode);
                     free(M);
                 }
 
@@ -112,7 +190,7 @@ int main(void)
             }
             else if (letter == 'p')
             {
-                if (M != NULL)
+                if (M)
                 {
                     printTriples(M);
                 }
@@ -120,7 +198,7 @@ int main(void)
             else
             {
                 isReading = 0;
-                if (M != NULL)
+                if (M)
                 {
                     free(M);
                 }
@@ -128,15 +206,81 @@ int main(void)
         }
         else
         {
-            printf("%d - %d - %d\n", row, column, value);
+
             if (letter == 'r')
             {
+                // printf("r %d - %d - %d\n", row, column, value);
                 readValue(M, row, column);
             }
             else
             {
-                if (M != NULL)
+                if (M)
                 {
+                    // printf("a %d - %d - %d\n", row, column, value);
+                    if (M->head == NULL)
+                    {
+                        RowNode *newRow = createRowNode(row);
+                        Node *newNode = malloc(sizeof(Node));
+                        newNode->next = NULL;
+                        newNode->column = column;
+                        newNode->value = value;
+
+                        M->head = newRow;
+                        newRow->row = newNode;
+                    }
+                    else
+                    {
+                        RowNode *temp = M->head;
+                        while (temp->next != NULL && temp->rowNumber != row)
+                        {
+                            temp = temp->next;
+                        }
+                        if (temp->rowNumber != row)
+                        {
+
+                            RowNode *newRow = createRowNode(row);
+                            Node *newNode = malloc(sizeof(Node));
+                            newNode->next = NULL;
+                            newNode->column = column;
+                            newNode->value = value;
+
+                            temp->next = newRow;
+                            newRow->row = newNode;
+                        }
+                        else
+                        {
+                            Node *checkHead = temp->row;
+                            Node *checkNext = temp->row->next;
+                            Node *newNode = malloc(sizeof(Node));
+                            newNode->column = column;
+                            newNode->value = value;
+                            newNode->next = NULL;
+
+                            if (checkHead->column > newNode->column)
+                            {
+                                newNode->next = checkHead;
+                                temp->row = newNode;
+                            }
+                            else
+                            {
+
+                                while (checkNext != NULL)
+                                {
+                                    if (checkHead->column == newNode->column)
+                                    {
+                                        // pensar na logica
+                                    }
+                                    checkHead = checkHead->next;
+                                    checkNext = checkNext->next;
+                                }
+                                temp->row->next = newNode;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    printf("Matrix is empty..\n");
                 }
             }
         }
