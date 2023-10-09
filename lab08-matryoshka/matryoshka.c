@@ -1,3 +1,10 @@
+/* Stack implementation (imagined as a matryoshka doll)
+
+Author: Luiz Diniz
+Last Update: 09/10/2023
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 

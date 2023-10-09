@@ -1,6 +1,9 @@
-/* modificar o create row node para devolver o row
-como NULL e criar o Node a parte na hr de colocar na memória
-na linha 230 */
+/* Implementation of a list of lists using a 2D dynamic array
+
+Author: Luiz Diniz
+Last Update: 09/10/2023
+
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -260,72 +263,164 @@ int main(void)
                     else
                     {
                         RowNode *temp = M->head;
-                        while (temp->next != NULL && temp->rowNumber != row)
+                        if (temp->rowNumber > row)
                         {
-                            temp = temp->next;
-                        }
-                        if (temp->rowNumber != row)
-                        {
-
                             RowNode *newRow = createRowNode(row);
                             Node *newNode = malloc(sizeof(Node));
                             newNode->next = NULL;
                             newNode->column = column;
                             newNode->value = value;
 
-                            temp->next = newRow;
+                            M->head = newRow;
                             newRow->row = newNode;
+                            newRow->next = temp;
                         }
                         else
                         {
-                            Node *checkHead = temp->row;
-                            Node *checkNext = temp->row->next;
-                            Node *newNode = malloc(sizeof(Node));
-                            newNode->column = column;
-                            newNode->value = value;
-                            newNode->next = NULL;
-
-                            if (checkHead->column > newNode->column)
+                            int isLooping = 1;
+                            while (temp->next != NULL && isLooping)
                             {
-                                newNode->next = checkHead;
-                                temp->row = newNode;
-                            }
-                            else
-                            {
-                                int isReading = 1;
-                                while (isReading)
+                                if (temp->rowNumber == row)
                                 {
-                                    if (checkNext == NULL)
+                                    Node *checkHead = temp->row;
+                                    Node *checkNext = temp->row->next;
+                                    Node *newNode = malloc(sizeof(Node));
+                                    newNode->column = column;
+                                    newNode->value = value;
+                                    newNode->next = NULL;
+
+                                    if (checkHead->column > newNode->column)
                                     {
-                                        if (checkHead->column == newNode->column)
-                                        {
-                                            checkHead->value = newNode->value;
-                                            isReading = 0;
-                                        }
-                                        else
-                                        {
-                                            checkHead->next = newNode;
-                                            isReading = 0;
-                                        }
+                                        newNode->next = checkHead;
+                                        temp->row = newNode;
                                     }
                                     else
                                     {
-                                        if (checkHead->column == newNode->column)
+                                        int isReading = 1;
+                                        while (isReading)
                                         {
-                                            checkHead->value = newNode->value;
-                                            isReading = 0;
-                                        }
-                                        else if (checkHead->column < newNode->column && checkNext->column > newNode->column)
-                                        {
-                                            checkHead->next = newNode;
-                                            newNode->next = checkNext;
-                                            isReading = 0;
-                                        }
-                                        else
-                                        {
+                                            if (checkNext == NULL)
+                                            {
+                                                if (checkHead->column == newNode->column)
+                                                {
+                                                    checkHead->value = newNode->value;
+                                                    isReading = 0;
+                                                }
+                                                else
+                                                {
+                                                    checkHead->next = newNode;
+                                                    isReading = 0;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (checkHead->column == newNode->column)
+                                                {
+                                                    checkHead->value = newNode->value;
+                                                    isReading = 0;
+                                                }
+                                                else if (checkHead->column < newNode->column && checkNext->column > newNode->column)
+                                                {
+                                                    checkHead->next = newNode;
+                                                    newNode->next = checkNext;
+                                                    isReading = 0;
+                                                }
+                                                else
+                                                {
 
-                                            checkHead = checkHead->next;
-                                            checkNext = checkNext->next;
+                                                    checkHead = checkHead->next;
+                                                    checkNext = checkNext->next;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    isLooping = 0;
+                                }
+                                else if (temp->next->rowNumber > row)
+                                {
+                                    RowNode *newRow = createRowNode(row);
+                                    Node *newNode = malloc(sizeof(Node));
+                                    newNode->next = NULL;
+                                    newNode->column = column;
+                                    newNode->value = value;
+
+                                    newRow->row = newNode;
+                                    newRow->next = temp->next;
+                                    temp->next = newRow;
+                                    isLooping = 0;
+                                }
+                                else
+                                {
+                                    temp = temp->next;
+                                }
+                            }
+                            if (temp->next == NULL)
+                            {
+
+                                if (temp->rowNumber != row)
+                                {
+
+                                    RowNode *newRow = createRowNode(row);
+                                    Node *newNode = malloc(sizeof(Node));
+                                    newNode->next = NULL;
+                                    newNode->column = column;
+                                    newNode->value = value;
+
+                                    temp->next = newRow;
+                                    newRow->row = newNode;
+                                }
+                                else
+                                {
+                                    Node *checkHead = temp->row;
+                                    Node *checkNext = temp->row->next;
+                                    Node *newNode = malloc(sizeof(Node));
+                                    newNode->column = column;
+                                    newNode->value = value;
+                                    newNode->next = NULL;
+
+                                    if (checkHead->column > newNode->column)
+                                    {
+                                        newNode->next = checkHead;
+                                        temp->row = newNode;
+                                    }
+                                    else
+                                    {
+                                        int isReading = 1;
+                                        while (isReading)
+                                        {
+                                            if (checkNext == NULL)
+                                            {
+                                                if (checkHead->column == newNode->column)
+                                                {
+                                                    checkHead->value = newNode->value;
+                                                    isReading = 0;
+                                                }
+                                                else
+                                                {
+                                                    checkHead->next = newNode;
+                                                    isReading = 0;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (checkHead->column == newNode->column)
+                                                {
+                                                    checkHead->value = newNode->value;
+                                                    isReading = 0;
+                                                }
+                                                else if (checkHead->column < newNode->column && checkNext->column > newNode->column)
+                                                {
+                                                    checkHead->next = newNode;
+                                                    newNode->next = checkNext;
+                                                    isReading = 0;
+                                                }
+                                                else
+                                                {
+
+                                                    checkHead = checkHead->next;
+                                                    checkNext = checkNext->next;
+                                                }
+                                            }
                                         }
                                     }
                                 }
